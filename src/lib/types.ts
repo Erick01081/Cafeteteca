@@ -1,7 +1,3 @@
-export type Dripper = 'V60' | 'Origami' | 'UFO' | 'B75' | 'Hario Neo' | 'Otro';
-
-export const DRIPPERS: Dripper[] = ['V60', 'Origami', 'UFO', 'B75', 'Hario Neo', 'Otro'];
-
 export type BloomRatio = '1:2' | '1:3' | '1:4';
 
 export const BLOOM_RATIOS: BloomRatio[] = ['1:2', '1:3', '1:4'];
@@ -61,33 +57,6 @@ export interface Coffee {
   isSample: boolean;
 }
 
-export interface Brew {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  coffeeId: string | null;
-  brewedAt: string;
-  dripper: Dripper;
-  dripperOther: string | null;
-  grindText: string;
-  waterTempC: number | null;
-  doseGrams: number;
-  ratio: number;
-  bloomRatio: BloomRatio;
-  bloomWaterG: number;
-  pourCount: number;
-  totalWaterG: number;
-  pours: PourStep[];
-  totalTimeSec: number | null;
-  notesFlavor: string | null;
-  notesAroma: string | null;
-  notesBody: string | null;
-  notesExtraction: string | null;
-  notesChange: string | null;
-  notesOther: string | null;
-  isSample: boolean;
-}
-
 export interface CoffeeInput {
   name: string;
   roaster?: string | null;
@@ -106,27 +75,4 @@ export interface CoffeeInput {
   ocrRawText?: string | null;
   ocrConfidence?: string | null;
   ocrFieldsFound?: OcrFieldsFound | null;
-}
-
-export interface BrewInput {
-  coffeeId?: string | null;
-  brewedAt: string;
-  dripper: Dripper;
-  dripperOther?: string | null;
-  grindText: string;
-  waterTempC?: number | null;
-  doseGrams: number;
-  ratio: number;
-  bloomRatio: BloomRatio;
-  bloomWaterG: number;
-  pourCount: number;
-  totalWaterG: number;
-  pours: PourStep[];
-  totalTimeSec?: number | null;
-  notesFlavor?: string | null;
-  notesAroma?: string | null;
-  notesBody?: string | null;
-  notesExtraction?: string | null;
-  notesChange?: string | null;
-  notesOther?: string | null;
 }

@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import './globals.css';
+import NavLinks from '@/components/NavLinks';
 
 export const metadata: Metadata = {
   title: 'Cafeteca — cuaderno de café filtrado',
-  description: 'Guarda tus cafés, reconoce sus etiquetas y lleva el historial de tus preparaciones.'
+  description: 'Guarda tus cafés, reconoce sus etiquetas y calcula tus vertidos.'
 };
 
 export const viewport: Viewport = {
@@ -25,31 +26,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-body min-h-screen flex flex-col">
-        <header className="border-b border-line bg-surface">
-          <div className="mx-auto max-w-3xl px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2"
+        >
+          Saltar al contenido
+        </a>
+        <header className="border-b border-line bg-surface sticky top-0 z-40">
+          <div className="mx-auto max-w-3xl px-3 sm:px-4 py-1 sm:py-2 flex items-center justify-between gap-2">
             <Link href="/" className="font-display text-xl text-roast-600 tracking-tight">
               Cafeteca
             </Link>
-            <nav className="flex items-center gap-1 sm:gap-3 text-xs sm:text-sm">
-              <Link href="/cafes/nuevo" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
-                Nuevo café
-              </Link>
-              <Link href="/preparaciones/nueva" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
-                Preparar
-              </Link>
-              <Link href="/calculadora" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
-                Calculadora
-              </Link>
-              <Link href="/ajustes" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
-                Ajustes
-              </Link>
-            </nav>
+            <NavLinks />
           </div>
         </header>
-        <main className="flex-1 mx-auto w-full max-w-3xl px-3 sm:px-4 py-4 sm:py-6">{children}</main>
+        <main id="contenido" className="flex-1 mx-auto w-full max-w-3xl px-3 sm:px-4 py-4 sm:py-6">
+          {children}
+        </main>
         <footer className="border-t border-line py-4">
           <div className="mx-auto max-w-3xl px-4 text-xs text-inkmuted">
-            Tus datos se guardan localmente en tu propio servidor.
+            Tus datos se guardan en tu proyecto de Supabase.
           </div>
         </footer>
       </body>

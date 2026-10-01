@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCoffee, listCoffeesWithBrewCount } from '@/lib/repo';
+import { createCoffee, listCoffees } from '@/lib/repo';
 import { savePhotoFromDataUrl } from '@/lib/storage';
 import { CoffeeInput } from '@/lib/types';
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get('q') || undefined;
   try {
-    const coffees = await listCoffeesWithBrewCount(q);
+    const coffees = await listCoffees(q);
     return NextResponse.json({ coffees });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

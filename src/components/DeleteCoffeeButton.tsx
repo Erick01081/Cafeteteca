@@ -30,14 +30,14 @@ export default function DeleteCoffeeButton({ coffeeId, coffeeName }: { coffeeId:
       <button type="button" className="btn-danger" onClick={() => setOpen(true)}>
         Eliminar café
       </button>
-      {error && <p className="field-error mt-1">{error}</p>}
+      {error && <p className="field-error mt-1 w-full" role="alert">{error}</p>}
       <ConfirmDialog
         open={open}
         title={`¿Eliminar "${coffeeName}"?`}
-        description="Se eliminarán también todas sus preparaciones guardadas. Esta acción no se puede deshacer."
+        description="Se eliminarán el café y su foto. Esta acción no se puede deshacer."
         onConfirm={handleDelete}
         onCancel={() => setOpen(false)}
-        confirmLabel={deleting ? 'Eliminando…' : 'Eliminar todo'}
+        confirmLabel={deleting ? 'Eliminando…' : 'Eliminar'}
       />
     </>
   );

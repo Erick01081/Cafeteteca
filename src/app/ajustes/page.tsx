@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function AjustesPage() {
   const router = useRouter();
@@ -10,14 +11,14 @@ export default function AjustesPage() {
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [addingSample, setAddingSample] = useState(false);
   const [removingSample, setRemovingSample] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   async function handleImportFile(file: File | undefined) {
     if (!file) return;
     setImporting(true);
     setMessage(null);
     try {
-      const text = await file.text();
-      const json = JSON.parse(text);
+      const json = JSON.parse(await file.text());
       const res = await fetch('/api/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,10 +26,7 @@ export default function AjustesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo importar el archivo.');
-      setMessage({
-        type: 'ok',
-        text: `Importado: ${data.result.coffees} cafés y ${data.result.brews} preparaciones.`
-      });
+      setMessage({ type: 'ok', text: `Importados ${data.result.coffees} cafés.` });
       router.refresh();
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'El archivo no es un JSON válido de Cafeteca.' });
@@ -44,29 +42,28 @@ export default function AjustesPage() {
     try {
       const res = await fetch('/api/sample-data', { method: 'POST' });
       const data = await res.json();
-      if (data.alreadyExisted) {
-        setMessage({ type: 'ok', text: 'Ya tenías datos de ejemplo cargados.' });
-      } else {
-        setMessage({ type: 'ok', text: 'Se agregó un café de ejemplo con una preparación.' });
-      }
+      if (!res.ok) throw new Error();
+      setMessage({
+        type: 'ok',
+        text: data.alreadyExisted ? 'Ya tenías un café de ejemplo cargado.' : 'Se agregó un café de ejemplo.'
+      });
       router.refresh();
     } catch {
-      setMessage({ type: 'error', text: 'No se pudieron crear los datos de ejemplo.' });
+      setMessage({ type: 'error', text: 'No se pudo crear el café de ejemplo.' });
     } finally {
       setAddingSample(false);
     }
   }
 
   async function handleRemoveSample() {
+    setConfirmRemove(false);
     setRemovingSample(true);
     setMessage(null);
     try {
       const res = await fetch('/api/sample-data', { method: 'DELETE' });
       const data = await res.json();
-      setMessage({
-        type: 'ok',
-        text: `Eliminados ${data.result.coffees} cafés y ${data.result.brews} preparaciones de ejemplo.`
-      });
+      if (!res.ok) throw new Error();
+      setMessage({ type: 'ok', text: `Eliminados ${data.result.coffees} cafés de ejemplo.` });
       router.refresh();
     } catch {
       setMessage({ type: 'error', text: 'No se pudieron eliminar los datos de ejemplo.' });
@@ -79,11 +76,12 @@ export default function AjustesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl text-ink">Ajustes</h1>
-        <p className="text-sm text-inkmuted mt-1">Respalda tu historial o prueba la app con datos de ejemplo.</p>
+        <p className="text-sm text-inkmuted mt-1">Respalda tu catálogo o prueba la app con datos de ejemplo.</p>
       </div>
 
       {message && (
         <div
+          role={message.type === 'error' ? 'alert' : 'status'}
           className={`rounded-md border px-3 py-2 text-sm ${
             message.type === 'ok'
               ? 'bg-cherry-400/10 border-cherry-400/30 text-cherry-600'
@@ -94,17 +92,14 @@ export default function AjustesPage() {
         </div>
       )}
 
-      <div className="card p-4 space-y-3">
-        <h2 className="font-display text-lg text-ink">Exportar / importar</h2>
+      <section className="card p-4 space-y-3" aria-labelledby="exp">
+        <h2 id="exp" className="font-display text-lg text-ink">Exportar / importar</h2>
         <p className="text-sm text-inkmuted">
-          La exportación incluye tus cafés y preparaciones en un archivo JSON. Las fotos se guardan
-          por separado en la carpeta <code className="text-xs">data/uploads</code> de tu servidor;
-          respáldala también si quieres conservarlas.
+          La exportación incluye tus cafés en un archivo JSON. Las fotos se guardan por separado en el
+          bucket <code className="text-xs">cafeteca-fotos</code> de Supabase Storage; respáldalas desde allí si quieres conservarlas.
         </p>
         <div className="flex flex-wrap gap-3">
-          <a href="/api/export" className="btn-primary" download>
-            Exportar todo (JSON)
-          </a>
+          <a href="/api/export" className="btn-primary" download>Exportar todo (JSON)</a>
           <button type="button" className="btn-secondary" onClick={() => fileRef.current?.click()} disabled={importing}>
             {importing ? 'Importando…' : 'Importar desde JSON'}
           </button>
@@ -116,26 +111,31 @@ export default function AjustesPage() {
             onChange={(e) => handleImportFile(e.target.files?.[0])}
           />
         </div>
-        <p className="field-hint">
-          Importar es seguro de repetir: los registros con el mismo id se actualizan en vez de duplicarse.
-        </p>
-      </div>
+        <p className="field-hint">Importar es seguro de repetir: los registros con el mismo id se actualizan en vez de duplicarse.</p>
+      </section>
 
-      <div className="card p-4 space-y-3">
-        <h2 className="font-display text-lg text-ink">Datos de ejemplo</h2>
+      <section className="card p-4 space-y-3" aria-labelledby="ej">
+        <h2 id="ej" className="font-display text-lg text-ink">Datos de ejemplo</h2>
         <p className="text-sm text-inkmuted">
-          Si quieres ver cómo luce la app con contenido, puedes agregar un café de ejemplo claramente
-          marcado como tal (nunca se mezcla con tus datos reales) y eliminarlo cuando quieras.
+          Agrega un café de ejemplo, claramente marcado, para ver cómo luce la app. Puedes eliminarlo cuando quieras sin tocar tus datos reales.
         </p>
         <div className="flex flex-wrap gap-3">
           <button type="button" className="btn-secondary" onClick={handleAddSample} disabled={addingSample}>
             {addingSample ? 'Agregando…' : 'Agregar café de ejemplo'}
           </button>
-          <button type="button" className="btn-danger" onClick={handleRemoveSample} disabled={removingSample}>
+          <button type="button" className="btn-danger" onClick={() => setConfirmRemove(true)} disabled={removingSample}>
             {removingSample ? 'Eliminando…' : 'Eliminar datos de ejemplo'}
           </button>
         </div>
-      </div>
+      </section>
+
+      <ConfirmDialog
+        open={confirmRemove}
+        title="¿Eliminar los datos de ejemplo?"
+        description="Solo se borran los cafés marcados como ejemplo. Tus cafés reales no se tocan."
+        onConfirm={handleRemoveSample}
+        onCancel={() => setConfirmRemove(false)}
+      />
     </div>
   );
 }

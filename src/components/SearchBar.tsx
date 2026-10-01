@@ -6,16 +6,20 @@ import { useEffect, useRef, useState } from 'react';
 export default function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [value, setValue] = useState(searchParams.get('q') ?? '');
+  const current = searchParams.get('q') ?? '';
+  const [value, setValue] = useState(current);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // No navega si el texto ya coincide con la URL (evita un reemplazo inútil al montar).
+    if (value.trim() === current) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
       if (value.trim()) params.set('q', value.trim());
       else params.delete('q');
-      router.replace(`/?${params.toString()}`);
+      const qs = params.toString();
+      router.replace(qs ? `/?${qs}` : '/');
     }, 300);
     return () => {
       if (timer.current) clearTimeout(timer.current);
@@ -24,15 +28,13 @@ export default function SearchBar() {
   }, [value]);
 
   return (
-    <div className="relative">
-      <input
-        type="search"
-        className="field-input"
-        placeholder="Buscar por nombre, tostador, variedad, origen…"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        aria-label="Buscar cafés"
-      />
-    </div>
+    <input
+      type="search"
+      className="field-input"
+      placeholder="Buscar por nombre, tostador, variedad, origen…"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      aria-label="Buscar cafés"
+    />
   );
 }

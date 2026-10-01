@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createCoffee, createBrew, deleteSampleData, listCoffees } from '@/lib/repo';
-import { calculateRecipe } from '@/lib/calculator';
+import { createCoffee, deleteSampleData, listCoffees } from '@/lib/repo';
 
 export async function DELETE() {
   try {
@@ -13,11 +12,8 @@ export async function DELETE() {
 
 export async function POST() {
   try {
-    // Evita duplicar si ya existen datos de ejemplo.
-    const existingSamples = (await listCoffees()).filter((c) => c.isSample);
-    if (existingSamples.length > 0) {
-      return NextResponse.json({ ok: true, alreadyExisted: true });
-    }
+    const existing = (await listCoffees()).filter((c) => c.isSample);
+    if (existing.length > 0) return NextResponse.json({ ok: true, alreadyExisted: true });
 
     const coffee = await createCoffee(
       {
@@ -35,32 +31,6 @@ export async function POST() {
       },
       true
     );
-
-    const recipe = calculateRecipe({ doseGrams: 15, ratio: 16, bloomRatio: '1:3', pourCount: 3 });
-    await createBrew(
-      {
-        coffeeId: coffee.id,
-        brewedAt: new Date().toISOString(),
-        dripper: 'V60',
-        grindText: 'Comandante, 24 clicks (media-fina) — dato de ejemplo',
-        waterTempC: 93,
-        doseGrams: recipe.doseGrams,
-        ratio: recipe.ratio,
-        bloomRatio: recipe.bloomRatio,
-        bloomWaterG: recipe.bloomWaterG,
-        pourCount: recipe.pourCount,
-        totalWaterG: recipe.totalWaterG,
-        pours: recipe.pours,
-        totalTimeSec: 165,
-        notesFlavor: 'Frutos rojos, panela — dato de ejemplo',
-        notesAroma: 'Floral, dato de ejemplo',
-        notesBody: 'Medio, dato de ejemplo',
-        notesExtraction: 'Equilibrada, dato de ejemplo',
-        notesChange: 'Moler un poco más grueso — dato de ejemplo'
-      },
-      true
-    );
-
     return NextResponse.json({ ok: true, coffeeId: coffee.id });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

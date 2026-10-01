@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteCoffee, getCoffee, listBrewsForCoffee, updateCoffee } from '@/lib/repo';
+import { deleteCoffee, getCoffee, updateCoffee } from '@/lib/repo';
 import { deletePhoto, savePhotoFromDataUrl } from '@/lib/storage';
 import { CoffeeInput } from '@/lib/types';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const coffee = await getCoffee(params.id);
   if (!coffee) return NextResponse.json({ error: 'Café no encontrado.' }, { status: 404 });
-  const brews = await listBrewsForCoffee(params.id);
-  return NextResponse.json({ coffee, brews });
+  return NextResponse.json({ coffee });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
