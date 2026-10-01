@@ -76,3 +76,37 @@ export interface CoffeeInput {
   ocrConfidence?: string | null;
   ocrFieldsFound?: OcrFieldsFound | null;
 }
+
+export interface PreparationPour {
+  n: number;
+  label: string;
+  stepWaterG: number;
+  cumulativeWaterG: number;
+}
+
+export interface Preparation {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  coffeeId: string | null;
+  brewedAt: string;
+  dripper: string;
+  dripperOther: string | null;
+  grindText: string;
+  waterTempC: number | null;
+  doseGrams: number;
+  ratio: number;
+  bloomRatio: BloomRatio;
+  bloomWaterG: number;
+  pourCount: number;
+  totalWaterG: number;
+  pours: PreparationPour[];
+  totalTimeSec: number | null;
+  notesFlavor: string | null;
+  notesAroma: string | null;
+  notesBody: string | null;
+  notesExtraction: string | null;
+  notesChange: string | null;
+  notesOther: string | null;
+  isSample: boolean;
+}
