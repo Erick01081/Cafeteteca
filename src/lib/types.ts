@@ -110,3 +110,26 @@ export interface Preparation {
   notesOther: string | null;
   isSample: boolean;
 }
+
+export interface PreparationInput {
+  coffeeId?: string | null;
+  brewedAt: string;
+  dripper: string;
+  dripperOther?: string | null;
+  grindText: string;
+  waterTempC?: number | null;
+  doseGrams: number;
+  ratio: number;
+  bloomRatio: BloomRatio;
+  bloomWaterG: number;
+  pourCount: number;
+  totalWaterG: number;
+  pours: PreparationPour[];
+  totalTimeSec?: number | null;
+  notesFlavor?: string | null;
+  notesAroma?: string | null;
+  notesBody?: string | null;
+  notesExtraction?: string | null;
+  notesChange?: string | null;
+  notesOther?: string | null;
+}

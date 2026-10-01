@@ -1,5 +1,5 @@
 import { getSupabase } from './supabase';
-import { Coffee, CoffeeInput, Preparation } from './types';
+import { Coffee, CoffeeInput, Preparation, PreparationInput } from './types';
 
 // Supabase/Postgres usa snake_case; la app usa camelCase. Estas funciones
 // traducen en ambos sentidos para que el resto del código nunca vea snake_case.
@@ -89,6 +89,31 @@ function preparationFromRow(row: any): Preparation {
   };
 }
 
+function preparationInputToRow(input: PreparationInput): Record<string, any> {
+  return {
+    coffee_id: input.coffeeId ?? null,
+    brewed_at: input.brewedAt,
+    dripper: input.dripper,
+    dripper_other: input.dripperOther ?? null,
+    grind_text: input.grindText,
+    water_temp_c: input.waterTempC ?? null,
+    dose_grams: input.doseGrams,
+    ratio: input.ratio,
+    bloom_ratio: input.bloomRatio,
+    bloom_water_g: input.bloomWaterG,
+    pour_count: input.pourCount,
+    total_water_g: input.totalWaterG,
+    pours: input.pours,
+    total_time_sec: input.totalTimeSec ?? null,
+    notes_flavor: input.notesFlavor ?? null,
+    notes_aroma: input.notesAroma ?? null,
+    notes_body: input.notesBody ?? null,
+    notes_extraction: input.notesExtraction ?? null,
+    notes_change: input.notesChange ?? null,
+    notes_other: input.notesOther ?? null
+  };
+}
+
 function fail(action: string, error: { message: string } | null): never {
   throw new Error(`${action}: ${error?.message || 'error desconocido de la base de datos.'}`);
 }
@@ -172,6 +197,34 @@ export async function getPreparation(id: string): Promise<Preparation | null> {
   const { data, error } = await supabase.from('PREPARACIONES').select('*').eq('id', id).maybeSingle();
   if (error) fail('No se pudo cargar la receta', error);
   return data ? preparationFromRow(data) : null;
+}
+
+export async function createPreparation(input: PreparationInput, isSample = false): Promise<Preparation> {
+  const supabase = getSupabase();
+  const row = { ...preparationInputToRow(input), is_sample: isSample };
+  const { data, error } = await supabase.from('PREPARACIONES').insert(row).select('*').single();
+  if (error) fail('No se pudo guardar la receta', error);
+  return preparationFromRow(data);
+}
+
+export async function updatePreparation(id: string, input: PreparationInput): Promise<Preparation | null> {
+  const supabase = getSupabase();
+  const row = { ...preparationInputToRow(input), updated_at: new Date().toISOString() };
+  const { data, error } = await supabase
+    .from('PREPARACIONES')
+    .update(row)
+    .eq('id', id)
+    .select('*')
+    .maybeSingle();
+  if (error) fail('No se pudo actualizar la receta', error);
+  return data ? preparationFromRow(data) : null;
+}
+
+export async function deletePreparation(id: string): Promise<boolean> {
+  const supabase = getSupabase();
+  const { error, count } = await supabase.from('PREPARACIONES').delete({ count: 'exact' }).eq('id', id);
+  if (error) fail('No se pudo eliminar la receta', error);
+  return (count || 0) > 0;
 }
 
 // ---------- Exportación / importación ----------
