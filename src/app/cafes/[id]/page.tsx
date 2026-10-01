@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getCoffee, listPreparationsByCoffee } from '@/lib/repo';
 import DeleteCoffeeButton from '@/components/DeleteCoffeeButton';
 import DatabaseErrorNotice from '@/components/DatabaseErrorNotice';
+import DeletePreparationButton from '@/components/DeletePreparationButton';
+import ReplicatePreparationButton from '@/components/ReplicatePreparationButton';
 import { Preparation } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -86,7 +88,7 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div>
             <h2 className="font-display text-xl text-ink">Recetas usadas en este café</h2>
-            <p className="text-sm text-inkmuted">Ahora también puedes abrir cada receta en modo solo visualización.</p>
+            <p className="text-sm text-inkmuted">Puedes visualizar, replicar, modificar o eliminar cada receta guardada.</p>
           </div>
         </div>
 
@@ -105,9 +107,16 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
                       {p.doseGrams} g · 1:{p.ratio} · {p.totalWaterG} g · {p.pourCount} vertidos + bloom
                     </p>
                   </div>
-                  <Link href={`/preparaciones/${p.id}`} className="btn-secondary !py-1.5 !px-3 text-sm">
-                    Solo visualizar
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/preparaciones/${p.id}`} className="btn-secondary !py-1.5 !px-3 text-sm">
+                      Solo visualizar
+                    </Link>
+                    <ReplicatePreparationButton preparationId={p.id} />
+                    <Link href={`/preparaciones/${p.id}/editar`} className="btn-secondary !py-1.5 !px-3 text-sm">
+                      Modificar
+                    </Link>
+                    <DeletePreparationButton preparationId={p.id} />
+                  </div>
                 </div>
               </li>
             ))}
