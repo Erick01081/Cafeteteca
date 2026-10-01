@@ -29,7 +29,7 @@ create table if not exists public."PREPARACIONES" (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  coffee_id uuid not null references public."CAFES" (id) on delete cascade,
+  coffee_id uuid references public."CAFES" (id) on delete set null,
   brewed_at timestamptz not null,
   dripper text not null,
   dripper_other text,

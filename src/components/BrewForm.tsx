@@ -6,7 +6,7 @@ import PourCalculator from './PourCalculator';
 import { Brew, DRIPPERS, Dripper, Recipe } from '@/lib/types';
 
 interface Props {
-  coffeeId: string;
+  coffeeId?: string | null;
   mode: 'create' | 'edit';
   brewId?: string;
   /** Valores para prellenar (al repetir/duplicar una preparación anterior, o al editar). */
@@ -86,7 +86,7 @@ export default function BrewForm({ coffeeId, mode, brewId, seed }: Props) {
         : null;
 
     const payload = {
-      coffeeId,
+      coffeeId: coffeeId ?? null,
       brewedAt: new Date(brewedAt).toISOString(),
       dripper,
       dripperOther: dripper === 'Otro' ? dripperOther : null,
@@ -118,7 +118,7 @@ export default function BrewForm({ coffeeId, mode, brewId, seed }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo guardar la preparación.');
-      router.push(`/cafes/${coffeeId}`);
+      router.push(coffeeId ? `/cafes/${coffeeId}` : '/preparaciones');
       router.refresh();
     } catch (err: any) {
       setSubmitError(err.message || 'Ocurrió un error al guardar.');

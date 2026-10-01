@@ -4,14 +4,20 @@ import { listCoffeesWithBrewCount } from '@/lib/repo';
 import CoffeeCard from '@/components/CoffeeCard';
 import SearchBar from '@/components/SearchBar';
 import DatabaseErrorNotice from '@/components/DatabaseErrorNotice';
+import { listUnassignedBrews } from '@/lib/repo';
+import BrewCard from '@/components/BrewCard';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage({ searchParams }: { searchParams: { q?: string } }) {
   let coffees: Awaited<ReturnType<typeof listCoffeesWithBrewCount>> = [];
   let dbError: string | null = null;
+  let unassignedBrews: Awaited<ReturnType<typeof listUnassignedBrews>> = [];
   try {
-    coffees = await listCoffeesWithBrewCount(searchParams.q);
+    [coffees, unassignedBrews] = await Promise.all([
+      listCoffeesWithBrewCount(searchParams.q),
+      listUnassignedBrews()
+    ]);
   } catch (err: any) {
     dbError = err?.message || 'Error desconocido.';
   }
@@ -43,6 +49,9 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
               <Link href="/cafes/nuevo" className="btn-primary">
                 Agregar tu primer café
               </Link>
+              <Link href="/calculadora" className="btn-secondary ml-2">
+                Solo calcular vertidos
+              </Link>
             </div>
           )}
 
@@ -60,6 +69,22 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
             </div>
           )}
         </>
+      )}
+
+      {!dbError && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-xl text-ink">Preparaciones sin café</h2>
+            <Link href="/preparaciones/nueva" className="btn-secondary text-sm">Nueva preparación</Link>
+          </div>
+          {unassignedBrews.length === 0 ? (
+            <p className="text-sm text-inkmuted">Puedes guardar preparaciones sin elegir un café, o <Link href="/calculadora" className="text-roast-600 underline">calcular vertidos sin guardar nada</Link>.</p>
+          ) : (
+            <div className="space-y-3">
+              {unassignedBrews.map((brew) => <BrewCard key={brew.id} brew={brew} />)}
+            </div>
+          )}
+        </section>
       )}
     </div>
   );

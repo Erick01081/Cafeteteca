@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 export default async function EditarPreparacionPage({ params }: { params: { id: string } }) {
   const brew = await getBrew(params.id);
   if (!brew) notFound();
-  const coffee = await getCoffee(brew.coffeeId);
-  if (!coffee) notFound();
+  const coffee = brew.coffeeId ? await getCoffee(brew.coffeeId) : null;
+  if (brew.coffeeId && !coffee) notFound();
 
   const seed = {
     brewedAt: brew.brewedAt,
@@ -33,9 +33,9 @@ export default async function EditarPreparacionPage({ params }: { params: { id: 
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-2xl text-ink">Editar preparación</h1>
-        <p className="text-sm text-inkmuted mt-1">{coffee.name}</p>
+        <p className="text-sm text-inkmuted mt-1">{coffee?.name ?? 'Sin café asociado'}</p>
       </div>
-      <BrewForm coffeeId={coffee.id} mode="edit" brewId={brew.id} seed={seed} />
+      <BrewForm coffeeId={coffee?.id ?? null} mode="edit" brewId={brew.id} seed={seed} />
     </div>
   );
 }

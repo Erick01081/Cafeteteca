@@ -24,7 +24,7 @@ function formatTime(totalTimeSec: number | null) {
   return `${m}:${String(s).padStart(2, '0')} min`;
 }
 
-export default function BrewCard({ brew, coffeeId }: { brew: Brew; coffeeId: string }) {
+export default function BrewCard({ brew, coffeeId }: { brew: Brew; coffeeId?: string | null }) {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -84,7 +84,7 @@ export default function BrewCard({ brew, coffeeId }: { brew: Brew; coffeeId: str
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Link
-          href={`/cafes/${coffeeId}/preparar?desde=${brew.id}`}
+          href={coffeeId ? `/cafes/${coffeeId}/preparar?desde=${brew.id}` : `/preparaciones/nueva?desde=${brew.id}`}
           className="btn-secondary !py-1.5 !px-3 text-sm"
         >
           Repetir / modificar

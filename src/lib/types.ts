@@ -65,7 +65,7 @@ export interface Brew {
   id: string;
   createdAt: string;
   updatedAt: string;
-  coffeeId: string;
+  coffeeId: string | null;
   brewedAt: string;
   dripper: Dripper;
   dripperOther: string | null;
@@ -109,7 +109,7 @@ export interface CoffeeInput {
 }
 
 export interface BrewInput {
-  coffeeId: string;
+  coffeeId?: string | null;
   brewedAt: string;
   dripper: Dripper;
   dripperOther?: string | null;

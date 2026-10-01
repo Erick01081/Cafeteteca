@@ -34,6 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/cafes/nuevo" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
                 Nuevo café
               </Link>
+              <Link href="/preparaciones/nueva" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
+                Preparar
+              </Link>
+              <Link href="/calculadora" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
+                Calculadora
+              </Link>
               <Link href="/ajustes" className="inline-flex min-h-11 items-center rounded-md px-2 text-ink hover:text-roast-600">
                 Ajustes
               </Link>

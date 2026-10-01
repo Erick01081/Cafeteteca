@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteBrew, getBrew, updateBrew } from '@/lib/repo';
+import { deleteBrew, getBrew, getCoffee, updateBrew } from '@/lib/repo';
 import { buildBrewInput, validateBrewBody } from '@/lib/brewValidation';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -13,9 +13,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!existing) return NextResponse.json({ error: 'Preparación no encontrada.' }, { status: 404 });
 
   const body = await req.json().catch(() => null);
-  const bodyWithCoffee = { ...body, coffeeId: body?.coffeeId || existing.coffeeId };
+  const bodyWithCoffee = { ...body, coffeeId: body?.coffeeId === undefined ? existing.coffeeId : body.coffeeId };
   const error = validateBrewBody(bodyWithCoffee);
   if (error) return NextResponse.json({ error }, { status: 400 });
+
+  if (bodyWithCoffee.coffeeId && !(await getCoffee(bodyWithCoffee.coffeeId))) {
+    return NextResponse.json({ error: 'El café asociado no existe.' }, { status: 404 });
+  }
 
   try {
     const input = buildBrewInput(bodyWithCoffee);

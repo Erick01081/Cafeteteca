@@ -2,7 +2,7 @@ import { BrewInput, DRIPPERS } from './types';
 
 export function validateBrewBody(body: any): string | null {
   if (!body) return 'Datos inválidos.';
-  if (!body.coffeeId) return 'Falta el café asociado.';
+  if (body.coffeeId != null && typeof body.coffeeId !== 'string') return 'Café asociado inválido.';
   if (!body.brewedAt) return 'Falta la fecha de la preparación.';
   if (!DRIPPERS.includes(body.dripper)) return 'Dripper inválido.';
   if (body.dripper === 'Otro' && !body.dripperOther?.trim()) return 'Especifica el dripper en "Otro".';
@@ -18,7 +18,7 @@ export function validateBrewBody(body: any): string | null {
 
 export function buildBrewInput(body: any): BrewInput {
   return {
-    coffeeId: body.coffeeId,
+    coffeeId: body.coffeeId ?? null,
     brewedAt: body.brewedAt,
     dripper: body.dripper,
     dripperOther: body.dripper === 'Otro' ? String(body.dripperOther).trim() : null,

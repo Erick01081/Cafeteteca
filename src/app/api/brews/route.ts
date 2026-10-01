@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBrew, getCoffee, listBrewsForCoffee } from '@/lib/repo';
+import { createBrew, getCoffee, listBrewsForCoffee, listUnassignedBrews } from '@/lib/repo';
 import { buildBrewInput, validateBrewBody } from '@/lib/brewValidation';
 
 export async function GET(req: NextRequest) {
   const coffeeId = req.nextUrl.searchParams.get('coffeeId');
-  if (!coffeeId) return NextResponse.json({ error: 'Falta coffeeId.' }, { status: 400 });
-  const brews = await listBrewsForCoffee(coffeeId);
+  const brews = coffeeId ? await listBrewsForCoffee(coffeeId) : await listUnassignedBrews();
   return NextResponse.json({ brews });
 }
 
@@ -14,7 +13,7 @@ export async function POST(req: NextRequest) {
   const error = validateBrewBody(body);
   if (error) return NextResponse.json({ error }, { status: 400 });
 
-  if (!(await getCoffee(body.coffeeId))) {
+  if (body.coffeeId && !(await getCoffee(body.coffeeId))) {
     return NextResponse.json({ error: 'El café asociado no existe.' }, { status: 404 });
   }
 

@@ -57,7 +57,7 @@ function brewFromRow(row: any): Brew {
     id: row.id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    coffeeId: row.coffee_id,
+    coffeeId: row.coffee_id ?? null,
     brewedAt: row.brewed_at,
     dripper: row.dripper,
     dripperOther: row.dripper_other,
@@ -83,7 +83,7 @@ function brewFromRow(row: any): Brew {
 
 function brewInputToRow(input: BrewInput): Record<string, any> {
   return {
-    coffee_id: input.coffeeId,
+    coffee_id: input.coffeeId ?? null,
     brewed_at: input.brewedAt,
     dripper: input.dripper,
     dripper_other: input.dripperOther ?? null,
@@ -216,6 +216,18 @@ export async function listBrewsForCoffee(coffeeId: string): Promise<Brew[]> {
   return (data || []).map(brewFromRow);
 }
 
+export async function listUnassignedBrews(): Promise<Brew[]> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('PREPARACIONES')
+    .select('*')
+    .is('coffee_id', null)
+    .order('brewed_at', { ascending: false })
+    .order('created_at', { ascending: false });
+  if (error) fail('No se pudieron cargar las preparaciones sin café', error);
+  return (data || []).map(brewFromRow);
+}
+
 export async function getBrew(id: string): Promise<Brew | null> {
   const supabase = getSupabase();
   const { data, error } = await supabase.from('PREPARACIONES').select('*').eq('id', id).maybeSingle();
@@ -301,7 +313,7 @@ export async function importAll(data: {
     id: b.id,
     created_at: b.createdAt,
     updated_at: b.updatedAt,
-    coffee_id: b.coffeeId,
+    coffee_id: b.coffeeId ?? null,
     brewed_at: b.brewedAt,
     dripper: b.dripper,
     dripper_other: b.dripperOther ?? null,
