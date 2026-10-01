@@ -106,6 +106,23 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
                     <p className="text-xs text-inkmuted mt-0.5">
                       {p.doseGrams} g · 1:{p.ratio} · {p.totalWaterG} g · {p.pourCount} vertidos + bloom
                     </p>
+                    <dl className="mt-2 space-y-0.5 text-xs">
+                      {[
+                        ['Sabor', p.notesFlavor],
+                        ['Aroma', p.notesAroma],
+                        ['Cuerpo', p.notesBody],
+                        ['Extracción', p.notesExtraction],
+                        ['Recomendaciones', p.notesChange],
+                        ['Notas adicionales', p.notesOther]
+                      ]
+                        .filter(([, value]) => value && String(value).trim())
+                        .map(([label, value]) => (
+                          <div key={label} className="flex gap-1.5">
+                            <dt className="text-inkmuted">{label}:</dt>
+                            <dd className="text-ink">{value}</dd>
+                          </div>
+                        ))}
+                    </dl>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link href={`/preparaciones/${p.id}`} className="btn-secondary !py-1.5 !px-3 text-sm">

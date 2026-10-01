@@ -18,6 +18,14 @@ export default async function PreparationDetailPage({ params }: { params: { id: 
     dateStyle: 'full',
     timeStyle: 'short'
   });
+  const tastingRows: [string, string | null][] = [
+    ['Sabor', preparation.notesFlavor],
+    ['Aroma', preparation.notesAroma],
+    ['Cuerpo', preparation.notesBody],
+    ['Extracción', preparation.notesExtraction],
+    ['Recomendaciones', preparation.notesChange],
+    ['Notas adicionales', preparation.notesOther]
+  ];
 
   return (
     <div className="space-y-5">
@@ -54,6 +62,22 @@ export default async function PreparationDetailPage({ params }: { params: { id: 
             ))}
           </ol>
         </div>
+
+        {tastingRows.some(([, value]) => value && value.trim()) && (
+          <div>
+            <h2 className="font-display text-lg text-ink mb-2">Notas de cata</h2>
+            <dl className="space-y-1 text-sm">
+              {tastingRows
+                .filter(([, value]) => value && value.trim())
+                .map(([label, value]) => (
+                  <div key={label} className="flex gap-1.5">
+                    <dt className="text-inkmuted">{label}:</dt>
+                    <dd className="text-ink">{value}</dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
+        )}
       </section>
     </div>
   );
