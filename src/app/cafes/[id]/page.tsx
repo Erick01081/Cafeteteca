@@ -1,15 +1,18 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCoffee } from '@/lib/repo';
+import { getCoffee, listPreparationsByCoffee } from '@/lib/repo';
 import DeleteCoffeeButton from '@/components/DeleteCoffeeButton';
 import DatabaseErrorNotice from '@/components/DatabaseErrorNotice';
+import { Preparation } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CoffeeDetailPage({ params }: { params: { id: string } }) {
   let coffee;
+  let preparations: Preparation[] = [];
   try {
     coffee = await getCoffee(params.id);
+    preparations = await listPreparationsByCoffee(params.id);
   } catch (err: any) {
     return <DatabaseErrorNotice message={err?.message || 'Error desconocido.'} />;
   }
@@ -78,6 +81,39 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
           </div>
         </div>
       </div>
+
+      <section className="card p-4 sm:p-5 space-y-3">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div>
+            <h2 className="font-display text-xl text-ink">Recetas usadas en este café</h2>
+            <p className="text-sm text-inkmuted">Ahora también puedes abrir cada receta en modo solo visualización.</p>
+          </div>
+        </div>
+
+        {preparations.length === 0 ? (
+          <p className="text-sm text-inkmuted">Aún no hay recetas registradas para este café.</p>
+        ) : (
+          <ul className="space-y-2.5">
+            {preparations.map((p) => (
+              <li key={p.id} className="rounded-md border border-line bg-surface p-3">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="text-sm font-medium text-ink">
+                      {new Date(p.brewedAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                    <p className="text-xs text-inkmuted mt-0.5">
+                      {p.doseGrams} g · 1:{p.ratio} · {p.totalWaterG} g · {p.pourCount} vertidos + bloom
+                    </p>
+                  </div>
+                  <Link href={`/preparaciones/${p.id}`} className="btn-secondary !py-1.5 !px-3 text-sm">
+                    Solo visualizar
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

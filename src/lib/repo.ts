@@ -1,5 +1,5 @@
 import { getSupabase } from './supabase';
-import { Coffee, CoffeeInput } from './types';
+import { Coffee, CoffeeInput, Preparation } from './types';
 
 // Supabase/Postgres usa snake_case; la app usa camelCase. Estas funciones
 // traducen en ambos sentidos para que el resto del código nunca vea snake_case.
@@ -49,6 +49,43 @@ function coffeeInputToRow(input: CoffeeInput): Record<string, any> {
     ...(input.ocrRawText !== undefined ? { ocr_raw_text: input.ocrRawText } : {}),
     ...(input.ocrConfidence !== undefined ? { ocr_confidence: input.ocrConfidence } : {}),
     ...(input.ocrFieldsFound !== undefined ? { ocr_fields_found: input.ocrFieldsFound } : {})
+  };
+}
+
+function preparationFromRow(row: any): Preparation {
+  const pours = Array.isArray(row.pours)
+    ? row.pours.filter((p: any) => p && typeof p === 'object')
+    : [];
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    coffeeId: row.coffee_id ?? null,
+    brewedAt: row.brewed_at,
+    dripper: row.dripper,
+    dripperOther: row.dripper_other ?? null,
+    grindText: row.grind_text,
+    waterTempC: row.water_temp_c ?? null,
+    doseGrams: Number(row.dose_grams),
+    ratio: Number(row.ratio),
+    bloomRatio: row.bloom_ratio,
+    bloomWaterG: Number(row.bloom_water_g),
+    pourCount: Number(row.pour_count),
+    totalWaterG: Number(row.total_water_g),
+    pours: pours.map((p: any) => ({
+      n: Number(p.n),
+      label: String(p.label || ''),
+      stepWaterG: Number(p.stepWaterG),
+      cumulativeWaterG: Number(p.cumulativeWaterG)
+    })),
+    totalTimeSec: row.total_time_sec ?? null,
+    notesFlavor: row.notes_flavor ?? null,
+    notesAroma: row.notes_aroma ?? null,
+    notesBody: row.notes_body ?? null,
+    notesExtraction: row.notes_extraction ?? null,
+    notesChange: row.notes_change ?? null,
+    notesOther: row.notes_other ?? null,
+    isSample: !!row.is_sample
   };
 }
 
@@ -115,6 +152,26 @@ export async function deleteSampleData(): Promise<{ coffees: number }> {
   const { error, count } = await supabase.from('CAFES').delete({ count: 'exact' }).eq('is_sample', true);
   if (error) fail('No se pudieron eliminar los cafés de ejemplo', error);
   return { coffees: count || 0 };
+}
+
+// ---------- Preparaciones ----------
+
+export async function listPreparationsByCoffee(coffeeId: string): Promise<Preparation[]> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('PREPARACIONES')
+    .select('*')
+    .eq('coffee_id', coffeeId)
+    .order('brewed_at', { ascending: false });
+  if (error) fail('No se pudieron cargar las recetas del café', error);
+  return (data || []).map(preparationFromRow);
+}
+
+export async function getPreparation(id: string): Promise<Preparation | null> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from('PREPARACIONES').select('*').eq('id', id).maybeSingle();
+  if (error) fail('No se pudo cargar la receta', error);
+  return data ? preparationFromRow(data) : null;
 }
 
 // ---------- Exportación / importación ----------
