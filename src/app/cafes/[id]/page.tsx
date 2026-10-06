@@ -6,6 +6,7 @@ import DatabaseErrorNotice from '@/components/DatabaseErrorNotice';
 import DeletePreparationButton from '@/components/DeletePreparationButton';
 import ReplicatePreparationButton from '@/components/ReplicatePreparationButton';
 import { Preparation } from '@/lib/types';
+import CreatePreparationForm from '@/components/CreatePreparationForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,6 +140,14 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="card p-4 sm:p-5 space-y-4">
+        <div>
+          <h2 className="font-display text-xl text-ink">Crear receta para {coffee.name}</h2>
+          <p className="text-sm text-inkmuted">Calcula los vertidos y registra cómo quedó esta preparación.</p>
+        </div>
+        <CreatePreparationForm coffeeId={coffee.id} />
       </section>
     </div>
   );
