@@ -128,7 +128,7 @@ export default async function CoffeeDetailPage({ params }: { params: { id: strin
                     <Link href={`/preparaciones/${p.id}`} className="btn-secondary !py-1.5 !px-3 text-sm">
                       Solo visualizar
                     </Link>
-                    <ReplicatePreparationButton preparationId={p.id} />
+                    <ReplicatePreparationButton preparationId={p.id} coffeeId={coffee.id} />
                     <Link href={`/preparaciones/${p.id}/editar`} className="btn-secondary !py-1.5 !px-3 text-sm">
                       Modificar
                     </Link>

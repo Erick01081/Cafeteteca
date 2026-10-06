@@ -3,20 +3,30 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { calculateRecipe } from '@/lib/calculator';
-import { BLOOM_RATIOS, BloomRatio } from '@/lib/types';
+import { BLOOM_RATIOS, BloomRatio, Preparation } from '@/lib/types';
 
-export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }) {
+export default function CreatePreparationForm({
+  coffeeId,
+  initialPreparation = null
+}: {
+  coffeeId: string;
+  initialPreparation?: Preparation | null;
+}) {
   const router = useRouter();
-  const [dose, setDose] = useState('15');
-  const [ratio, setRatio] = useState('16');
-  const [bloomRatio, setBloomRatio] = useState<BloomRatio>('1:3');
-  const [pourCount, setPourCount] = useState('3');
-  const [dripper, setDripper] = useState('V60');
+  const [dose, setDose] = useState(() => String(initialPreparation?.doseGrams ?? 15));
+  const [ratio, setRatio] = useState(() => String(initialPreparation?.ratio ?? 16));
+  const [bloomRatio, setBloomRatio] = useState<BloomRatio>(() => initialPreparation?.bloomRatio ?? '1:3');
+  const [pourCount, setPourCount] = useState(() => String(initialPreparation?.pourCount ?? 3));
+  const [dripper, setDripper] = useState(() => {
+    const methods = ['V60', 'V60 Neo', 'Origami', 'B75', 'UFO'];
+    if (initialPreparation && methods.includes(initialPreparation.dripper)) return initialPreparation.dripper;
+    return 'V60';
+  });
   const [brewedDate, setBrewedDate] = useState(todayLocalDate);
-  const [grindText, setGrindText] = useState('');
-  const [waterTempC, setWaterTempC] = useState('');
-  const [totalTimeMin, setTotalTimeMin] = useState('');
-  const [totalTimeRemainderSec, setTotalTimeRemainderSec] = useState('');
+  const [grindText, setGrindText] = useState(() => initialPreparation?.grindText ?? '');
+  const [waterTempC, setWaterTempC] = useState(() => initialPreparation?.waterTempC == null ? '' : String(initialPreparation.waterTempC));
+  const [totalTimeMin, setTotalTimeMin] = useState(() => initialPreparation?.totalTimeSec == null ? '' : String(Math.floor(initialPreparation.totalTimeSec / 60)));
+  const [totalTimeRemainderSec, setTotalTimeRemainderSec] = useState(() => initialPreparation?.totalTimeSec == null ? '' : String(initialPreparation.totalTimeSec % 60));
   const [notesFlavor, setNotesFlavor] = useState('');
   const [notesAroma, setNotesAroma] = useState('');
   const [notesBody, setNotesBody] = useState('');
@@ -77,9 +87,9 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
           notesFlavor, notesAroma, notesBody, notesExtraction, notesChange, notesOther
         })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'No se pudo guardar la receta.');
-      router.refresh();
+      router.push(`/cafes/${coffeeId}`);
     } catch (err: any) {
       setError(err.message || 'No se pudo guardar la receta.');
     } finally {
@@ -89,6 +99,7 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
 
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
+      {error && <p className="field-error" role="alert">{error}</p>}
       <div className="card p-3 sm:p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <Field label="Café (g)"><input className="field-input" type="text" inputMode="decimal" value={dose} onChange={(e) => setDose(e.target.value)} aria-invalid={!doseN} /></Field>
@@ -161,7 +172,6 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
           <TextArea label="Qué cambiar" value={notesChange} onChange={setNotesChange} />
           <TextArea label="Notas adicionales" value={notesOther} onChange={setNotesOther} />
         </div>
-        {error && <p className="field-error" role="alert">{error}</p>}
         <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Guardar receta para este café'}</button>
       </div>
     </form>
