@@ -15,8 +15,7 @@ export default async function PreparationDetailPage({ params }: { params: { id: 
   if (!preparation) notFound();
 
   const brewedAtText = new Date(preparation.brewedAt).toLocaleString('es-CO', {
-    dateStyle: 'full',
-    timeStyle: 'short'
+    dateStyle: 'full'
   });
   const tastingRows: [string, string | null][] = [
     ['Sabor', preparation.notesFlavor],
@@ -49,6 +48,9 @@ export default async function PreparationDetailPage({ params }: { params: { id: 
           <div><dt className="text-inkmuted">Ratio</dt><dd className="text-ink">1:{preparation.ratio}</dd></div>
           <div><dt className="text-inkmuted">Bloom</dt><dd className="text-ink">{preparation.bloomRatio} ({preparation.bloomWaterG} g)</dd></div>
           <div><dt className="text-inkmuted">Agua total</dt><dd className="text-ink">{preparation.totalWaterG} g</dd></div>
+          {preparation.totalTimeSec != null && (
+            <div><dt className="text-inkmuted">Tiempo total</dt><dd className="text-ink">{Math.floor(preparation.totalTimeSec / 60)} min {preparation.totalTimeSec % 60} seg</dd></div>
+          )}
         </dl>
 
         <div>

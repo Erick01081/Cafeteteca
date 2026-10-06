@@ -12,10 +12,11 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
   const [bloomRatio, setBloomRatio] = useState<BloomRatio>('1:3');
   const [pourCount, setPourCount] = useState('3');
   const [dripper, setDripper] = useState('V60');
-  const [dripperOther, setDripperOther] = useState('');
+  const [brewedDate, setBrewedDate] = useState(todayLocalDate);
   const [grindText, setGrindText] = useState('');
   const [waterTempC, setWaterTempC] = useState('');
-  const [totalTimeSec, setTotalTimeSec] = useState('');
+  const [totalTimeMin, setTotalTimeMin] = useState('');
+  const [totalTimeRemainderSec, setTotalTimeRemainderSec] = useState('');
   const [notesFlavor, setNotesFlavor] = useState('');
   const [notesAroma, setNotesAroma] = useState('');
   const [notesBody, setNotesBody] = useState('');
@@ -42,8 +43,14 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const minutes = totalTimeMin === '' ? 0 : integer(totalTimeMin);
+    const seconds = totalTimeRemainderSec === '' ? 0 : integer(totalTimeRemainderSec);
     if (!dripper.trim() || !grindText.trim()) {
       setError('El método y la molienda son obligatorios.');
+      return;
+    }
+    if (!brewedDate || minutes < 0 || seconds < 0 || seconds > 59) {
+      setError('Revisa la fecha y el tiempo de preparación. Los segundos deben estar entre 0 y 59.');
       return;
     }
     if (doseN <= 0 || ratioN <= 0 || integer(pourCount) < 0 || integer(pourCount) > 10) {
@@ -59,11 +66,14 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           coffeeId,
-          brewedAt: new Date().toISOString(),
-          dripper: dripper.trim(), dripperOther, grindText: grindText.trim(), waterTempC,
+          brewedAt: new Date(`${brewedDate}T00:00:00`).toISOString(),
+          dripper, grindText: grindText.trim(), waterTempC,
           doseGrams: recipe.doseGrams, ratio: recipe.ratio, bloomRatio,
           bloomWaterG: recipe.bloomWaterG, pourCount: recipe.pourCount,
-          totalWaterG: recipe.totalWaterG, pours: recipe.pours, totalTimeSec,
+          totalWaterG: recipe.totalWaterG, pours: recipe.pours,
+          totalTimeSec: totalTimeMin === '' && totalTimeRemainderSec === ''
+            ? ''
+            : minutes * 60 + seconds,
           notesFlavor, notesAroma, notesBody, notesExtraction, notesChange, notesOther
         })
       });
@@ -127,11 +137,14 @@ export default function CreatePreparationForm({ coffeeId }: { coffeeId: string }
       <div className="card p-3 sm:p-4 space-y-4">
         <h2 className="font-display text-lg text-ink">Detalles de preparación</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        <Field label="Método"><input className="field-input" value={dripper} onChange={(e) => setDripper(e.target.value)} required /></Field>
-        <Field label="Método (otro)"><input className="field-input" value={dripperOther} onChange={(e) => setDripperOther(e.target.value)} /></Field>
+        <Field label="Fecha de preparación"><input className="field-input" type="date" value={brewedDate} onChange={(e) => setBrewedDate(e.target.value)} required /></Field>
+        <Field label="Método"><select className="field-input" value={dripper} onChange={(e) => setDripper(e.target.value)} required>
+          {['V60', 'V60 Neo', 'Origami', 'B75', 'UFO'].map((method) => <option key={method} value={method}>{method}</option>)}
+        </select></Field>
         <Field label="Molienda"><input className="field-input" value={grindText} onChange={(e) => setGrindText(e.target.value)} required /></Field>
         <Field label="Temperatura del agua (°C)"><input className="field-input" type="number" step="0.1" value={waterTempC} onChange={(e) => setWaterTempC(e.target.value)} /></Field>
-        <Field label="Tiempo total (segundos)"><input className="field-input" type="number" min="0" value={totalTimeSec} onChange={(e) => setTotalTimeSec(e.target.value)} /></Field>
+        <Field label="Tiempo (min)"><input className="field-input" type="number" min="0" step="1" value={totalTimeMin} onChange={(e) => setTotalTimeMin(e.target.value)} /></Field>
+        <Field label="Tiempo (seg)"><input className="field-input" type="number" min="0" max="59" step="1" value={totalTimeRemainderSec} onChange={(e) => setTotalTimeRemainderSec(e.target.value)} /></Field>
         </div>
       </div>
 
@@ -171,4 +184,10 @@ function number(value: string): number {
 function integer(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isInteger(parsed) ? parsed : -1;
+}
+
+function todayLocalDate(): string {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
