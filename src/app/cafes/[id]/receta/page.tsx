@@ -24,9 +24,7 @@ export default async function CreateCoffeeRecipePage({ params }: { params: { id:
         <h1 className="font-display text-2xl text-ink">Crear receta</h1>
         <p className="text-sm text-inkmuted mt-1">Calcula los vertidos y registra cómo quedó la preparación de {coffee.name}.</p>
       </div>
-      <section className="card p-4 sm:p-5">
-        <CreatePreparationForm coffeeId={coffee.id} />
-      </section>
+      <CreatePreparationForm coffeeId={coffee.id} />
     </div>
   );
 }
